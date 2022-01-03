@@ -1,19 +1,16 @@
 Sailor.vim
 ==========
 
-This plugin is a fork from [vim-kitty-navigator](https://github.com/knubie/vim-kitty-navigator) extending it's capabilities to also work with tmux pane navigation. The aim is to make navigation between Kitty windows, tmux panes, and vim splits seamless. With some extra configuration, kitty-tmux navigation works even through SSH!
-
-**NOTE**:
-- This requires kitty v0.13.1 or higher.
-- Requires newer version of tmux with 'pane_at_*' format feature. (Not sure which version, but tested tmux 2.1 and didn't work)
-- Works even between splits in a tmux session inside a kitty window.
-
+Sailor.vim is a (n)vim and tmux plugin which allows a seamless navigation between
+kitty windows, tmux panes and (n)vim buffers.
 
 
 Use cases
 ---------
 
-Locally all the craziest things should work. Just like:
+Locally all the craziest things should work. This means you should be able to 
+sailor between any sort of kitty/tmux/nvim split nomatter its nature.
+Let's try to illustrate it:
 ```
 + ---------------------------- + ------------------------ +
 | kitty window                 | kitty window             |
@@ -58,6 +55,12 @@ The `install.sh` script will create some symbolic links for kitty so it is
 straightforward to get it running. You will need to restart kitty so all 
 the configuration works fine. This file runs after the vim/nvim plugin is
 installed.
+
+### Requirements
+
+- This requires kitty v0.13.1 or higher.
+- Requires newer version of tmux with 'pane_at_*' format feature. (Not sure which version, but tested tmux 2.1 and didn't work)
+- Works even between splits in a tmux session inside a kitty window.
 
 ### Editor: vim/nvim.
 
@@ -166,3 +169,10 @@ bind -x '"\C-l": kitty @ kitten neighboring_window.py right'
 - Set terminal key binding for changing kitty window when not using tmux
 
 4. Don't forget to install the tmux plugin on your remote system also. And copy `neighboring_window.py` to your remote machine ~/.config/kitty directory.
+
+
+Ack
+---
+
+This plugin is a fork from [vim-kitty-navigator](https://github.com/knubie/vim-kitty-navigator) extending it's capabilities to also work with tmux pane navigation. The aim is to make navigation between Kitty windows, tmux panes, and vim splits seamless. With some extra configuration, kitty-tmux navigation works even through SSH!
+
