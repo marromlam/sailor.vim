@@ -1,12 +1,12 @@
-Kitty Vim Tmux Navigator
-==================
+Surfer.vim
+==========
 
 This plugin is a fork from [vim-kitty-navigator](https://github.com/knubie/vim-kitty-navigator) extending it's capabilities to also work with tmux pane navigation. The aim is to make navigation between Kitty windows, tmux panes, and vim splits seamless. With some extra configuration, kitty-tmux navigation works even through SSH!
 
 **NOTE**:
 - This requires kitty v0.13.1 or higher.
 - Requires newer version of tmux with 'pane_at_*' format feature. (Not sure which version, but tested tmux 2.1 and didn't work)
-- Works only 2 nested layer deep. So navigation for vim splits inside tmux inside kitty is not supported.
+- Works even between splits in a tmux session inside a kitty window.
 
 Usage
 -----
