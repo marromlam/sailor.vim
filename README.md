@@ -1,4 +1,4 @@
-Surfer.vim
+Sailor.vim
 ==========
 
 This plugin is a fork from [vim-kitty-navigator](https://github.com/knubie/vim-kitty-navigator) extending it's capabilities to also work with tmux pane navigation. The aim is to make navigation between Kitty windows, tmux panes, and vim splits seamless. With some extra configuration, kitty-tmux navigation works even through SSH!
@@ -22,15 +22,23 @@ Vim splits, tmux panes, and kitty window seamlessly.
 Installation
 ------------
 
-### VIM
+The `install.sh` script will create some symbolic links for kitty so it is
+straightforward to get it running. You will need to restart kitty so all 
+the configuration works fine. This file runs after the vim/nvim plugin is
+installed.
 
-Use your favorite plugin manager and add the following repo to your plugin list
+### Editor: vim/nvim.
+
+Use your favorite plugin manager (`packer.nvim` in the example) and add the 
+this repository to your plugin list
 ```vim
-'NikoKS/kitty-vim-tmux-navigator'
+packer.use {
+  "marromlam/sailor.vim",
+  run = "./install.sh"
+}
 ```
-And then run the plugin installation function
 
-### KITTY
+### kitty.
 
 To configure kitty, do the following steps:
 
@@ -66,31 +74,19 @@ kitty -o allow_remote_control=yes --listen-on unix:/tmp/mykitty
 
 The listening address can be customized in your vimrc by setting `g:kitty_navigator_listening_on_address`. It defaults to `unix:/tmp/mykitty`.
 
-### TMUX
+### tmux.
 
-If you're using [TPM](https://github.com/tmux-plugins/tpm), just add this snippet to your tmux.conf:
+If you're using [TPM](https://github.com/tmux-plugins/tpm), 
+just add this snippet to your tmux.conf:
 
 ```conf
-set -g @plugin 'NikoKS/kitty-vim-tmux-navigator'
+set -g @plugin 'marromlam/sailor.vim'
 ```
 
-And update your plugin
+And update your tmux session, tipically `prefix`+`I`.
+If you do not want to ue TPM, then you should just copy-paste
+the `.tmux` file to your `tmux.conf` file.
 
-**Otherwise**
-
-Add the following snippet to your tmux.conf:
-
-```sh
-# SSH aware kitty change window
-if-shell '[ $SSH_TTY ]' 'to="--to=tcp:localhost:$KITTY_PORT "' 'to=""'
-move='kitty @ ${to}kitten neighboring_window.py'
-
-# Key Binds
-bind-key -n 'C-h' if-shell "[ #{pane_at_left} != 1 ]" "select-pane -L" "run-shell '$move left'"
-bind-key -n 'C-j' if-shell "[ #{pane_at_bottom} != 1 ]" "select-pane -D" "run-shell '$move bottom'"
-bind-key -n 'C-k' if-shell "[ #{pane_at_top} != 1 ]" "select-pane -U" "run-shell '$move top'"
-bind-key -n 'C-l' if-shell "[ #{pane_at_right} != 1 ]" "select-pane -R" "run-shell '$move right'"
-```
 
 SSH Compatibility
 -----------------
