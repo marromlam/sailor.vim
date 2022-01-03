@@ -2,6 +2,11 @@
 
 THIS_PATH=`pwd`
 
+if test -f "$THIS_PATH/installation_complete"; then
+  # then the installation is complete
+  exit
+fi
+
 # kitty installation
 # we just need to create some links to be able to navigate
 KITTY_PATH="$HOME/.config/kitty"
@@ -13,7 +18,7 @@ ln -sf {$THIS_PATH,$KITTY_PATH}/pass_keys.py
 # TODO: each shell needs its own config file.
 #       we need to do some branchin here.
 if [ $SSH_TTY ]; then
-  echo "source $THIS_PATH/zsh_sail.sh" >> ~/.zshrc
+  echo "source $THIS_PATH/sailor.zsh" >> ~/.zshrc
 fi
 
 # tmux installation
@@ -22,6 +27,7 @@ fi
 # TODO: create the warning.
 
 
-# set -eou pipefail
+# create an empty file to indicate that the installation is complete
+touch $THIS_PATH/installation_complete
 
-# vim:foldmethod=marker
+# vim: fdm=marker ft=sh
