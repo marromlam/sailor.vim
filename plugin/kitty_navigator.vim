@@ -48,7 +48,15 @@ command! VimNavigateDown     call s:VimNavigate('j')
 
 
 function! s:KittyCommand(args)
-  let cmd = 'kitty @ ' . a:args
+  " this is not needed in vim but in neovim it is!!
+  if empty($SSH_TTY)
+    let cmd = 'kitty @ ' . a:args
+    " echo 'not in ssh'
+  else
+    let cmd = 'kitty @ --to=tcp:localhost:' . $KITTY_PORT . ' ' . a:args
+    " echo 'in ssh'
+  endif
+  " let cmd = 'kitty @ ' . a:args
   return system(cmd)
 endfunction
 
