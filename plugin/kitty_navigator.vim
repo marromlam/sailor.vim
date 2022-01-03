@@ -2,28 +2,28 @@
 " no more windows in that direction, forwards the operation to kitty.
 
 " Check if loaded, else skip
-if exists("g:loaded_awesome_navigator") || &cp || v:version < 700
-  echo "Awesome Navigator is already loaded"
+if exists("g:loaded_sailor") || &cp || v:version < 700
+  " echo "Sailor is already loaded"
   finish
 endif
 
 
 " set some constants {{{
 
-if !exists("g:awesome_navigator_no_mappings")
-  let g:awesome_navigator_no_mappings = 0
+if !exists("g:sailor_no_mappings")
+  let g:sailor_no_mappings = 0
 endif
 
-if !exists("g:awesome_navigator_save_on_switch")
-  let g:awesome_navigator_save_on_switch = 1
+if !exists("g:sailor_save_on_switch")
+  let g:sailor_save_on_switch = 1
 endif
 
-if !exists("g:awesome_navigator_disable_when_zoomed")
-  let g:awesome_navigator_disable_when_zoomed = 1
+if !exists("g:sailor_disable_when_zoomed")
+  let g:sailor_disable_when_zoomed = 0
 endif
 
-if !exists("g:awesome_navigator_preserve_zoom")
-  let g:awesome_navigator_preserve_zoom = 0
+if !exists("g:sailor_preserve_zoom")
+  let g:sailor_preserve_zoom = 0
 endif
 
 " }}}
@@ -47,6 +47,18 @@ command! VimNavigateUp       call s:VimNavigate('k')
 command! VimNavigateDown     call s:VimNavigate('j')
 
 
+function! s:KittyCommand(args)
+  let cmd = 'kitty @ ' . a:args
+  return system(cmd)
+endfunction
+
+let s:kitty_mappings = {
+\   "h": "left",
+\   "j": "bottom",
+\   "k": "top",
+\   "l": "right"
+\ }
+
 if empty($TMUX)
   echo "this is kitty"
   " then we just map to Kitty stuff  {{{
@@ -57,14 +69,9 @@ if empty($TMUX)
   command! AwesomeNavigateUp       call s:KittyAwareNavigate('k')
   command! AwesomeNavigateRight    call s:KittyAwareNavigate('l')
 
-  function! s:KittyCommand(args)
-    let cmd = 'kitty @ ' . a:args
-    return system(cmd)
-  endfunction
-
   let s:kitty_is_last_pane = 0
 
-  augroup kitty_navigator
+  augroup SailorKitty
     au!
     autocmd WinEnter * let s:kitty_is_last_pane = 0
   augroup END
@@ -85,13 +92,7 @@ if empty($TMUX)
     let at_tab_page_edge = (nr == winnr())
   
     if kitty_last_pane || at_tab_page_edge
-      let mappings = {
-      \   "h": "left",
-      \   "j": "bottom",
-      \   "k": "top",
-      \   "l": "right"
-      \ }
-      let args = 'kitten neighboring_window.py' . ' ' . mappings[a:direction]
+      let args = 'kitten neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
       silent call s:KittyCommand(args)
       let s:kitty_is_last_pane = 1
     else
@@ -138,7 +139,7 @@ else
   command! TmuxNavigatorProcessList call s:TmuxNavigatorProcessList()
 
   let s:tmux_is_last_pane = 0
-  augroup tmux_navigator
+  augroup SailorTmux
     au!
     autocmd WinEnter * let s:tmux_is_last_pane = 0
   augroup END
@@ -148,7 +149,7 @@ else
   endfunction
 
   function! s:ShouldForwardNavigationBackToTmux(tmux_last_pane, at_tab_page_edge)
-    if g:awesome_navigator_disable_when_zoomed && s:TmuxVimPaneIsZoomed()
+    if g:sailor_disable_when_zoomed && s:TmuxVimPaneIsZoomed()
       return 0
     endif
     return a:tmux_last_pane || a:at_tab_page_edge
@@ -161,9 +162,23 @@ else
     if !tmux_last_pane
       let ok = s:VimNavigate(a:direction)
       if !(ok)
-        echo "we just moved"
+        " echo "we just moved"
+        let at_tab_page_edge = (nr == winnr())
+        if (at_tab_page_edge)
+          " we need to fallback to kitty navigation
+          " TODO: this is a bit hacky, but it seems to work
+          "       we should check it works always
+          " echo "ha! so this is the last pane"
+          let tmux_last_pane = 1
+          let args = 'kitten neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
+          silent call s:KittyCommand(args)
+          let s:kitty_is_last_pane = 1
+        else
+          " echo "ok, we are done"
+          let s:kitty_is_last_pane = 0
+        endif
       else
-        echo "we are at the edge of vim"
+        " echo "we are at the edge of vim"
         " then actually it is the last pane
         let tmux_last_pane = 1
       endif
@@ -174,12 +189,12 @@ else
     " b) we tried switching windows in vim but it didn't have effect.
     if s:ShouldForwardNavigationBackToTmux(tmux_last_pane, at_tab_page_edge)
 
-      if g:awesome_navigator_save_on_switch == 1
+      if g:sailor_save_on_switch == 1
         try
           update " save the active buffer. See :help update
         catch /^Vim\%((\a\+)\)\=:E32/ " catches the no file name error
         endtry
-      elseif g:awesome_navigator_save_on_switch == 2
+      elseif g:sailor_save_on_switch == 2
         try
           wall " save all the buffers. See :help wall
         catch /^Vim\%((\a\+)\)\=:E141/ " catches the no file name error
@@ -187,7 +202,7 @@ else
       endif
 
       let args = 'select-pane -t ' . shellescape($TMUX_PANE) . ' -' . tr(a:direction, 'phjkl', 'lLDUR')
-      if g:awesome_navigator_preserve_zoom == 1
+      if g:sailor_preserve_zoom == 1
         let l:args .= ' -Z'
       endif
 
@@ -207,17 +222,18 @@ else
 endif
 
 
-if !(g:awesome_navigator_no_mappings)
-  " nnoremap <silent> <c-h> :AwesomeNavigateLeft<cr>
-  " nnoremap <silent> <c-j> :AwesomeNavigateDown<cr>
-  " nnoremap <silent> <c-k> :AwesomeNavigateUp<cr>
-  " nnoremap <silent> <c-l> :AwesomeNavigateRight<cr>
-  nnoremap <c-h> :AwesomeNavigateLeft<cr>
-  nnoremap <c-j> :AwesomeNavigateDown<cr>
-  nnoremap <c-k> :AwesomeNavigateUp<cr>
-  nnoremap <c-l> :AwesomeNavigateRight<cr>
+if !(g:sailor_no_mappings)
+  nnoremap <silent> <c-h> :AwesomeNavigateLeft<cr>
+  nnoremap <silent> <c-j> :AwesomeNavigateDown<cr>
+  nnoremap <silent> <c-k> :AwesomeNavigateUp<cr>
+  nnoremap <silent> <c-l> :AwesomeNavigateRight<cr>
+  " this is just for debugging
+  " nnoremap <c-h> :AwesomeNavigateLeft<cr>
+  " nnoremap <c-j> :AwesomeNavigateDown<cr>
+  " nnoremap <c-k> :AwesomeNavigateUp<cr>
+  " nnoremap <c-l> :AwesomeNavigateRight<cr>
 endif
-let g:loaded_awesome_navigator = 1
+let g:loaded_sailor = 1
 
 
 " vim: ft=vim fdm=marker
