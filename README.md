@@ -8,6 +8,38 @@ This plugin is a fork from [vim-kitty-navigator](https://github.com/knubie/vim-k
 - Requires newer version of tmux with 'pane_at_*' format feature. (Not sure which version, but tested tmux 2.1 and didn't work)
 - Works even between splits in a tmux session inside a kitty window.
 
+
+
+Use cases
+---------
+
+Locally all the craziest things should work. Just like:
+```
++ ---------------------------- + ------------------------ +
+| kitty window                 | kitty window             |
+|                              |                          |
+|   + ------- tmux ------- +   |                          |
+|   |                      |   |                          |
+|   |   + --- nvim --- +   |   |                          |
+|   |   |              |   |   |                          |
+|   |   | buffer       |   |   |                          |
+|   |   |              |   |   |                          |
+|   |   + ------------ +   |   |                          |
+|   |                      |   |                          |
+|   + -------------------- +   + ------------------------ +
+|   |                      |   |                          |                   
+|   | tmux pane            |   |   + ----- nvim ----- +   |
+|   |                      |   |   |                  |   |
+|   |                      |   |   | buffer           |   |
+|   |                      |   |   |                  |   |
+|   + -------------------- +   |   + ---------------- +   |
+|                              |                          |  
++ ---------------------------- + ------------------------ +
+```
+
+
+
+
 Usage
 -----
 
