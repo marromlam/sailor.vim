@@ -66,7 +66,7 @@ def handle_result(args, result, target_window_id, boss):
 
     # Check if keyword in the foreground process
     proc = w.child.foreground_processes[0]['cmdline']
-    keywords = ['vim', 'nvim', 'ssh', 'tmux', 'termpdf']
+    keywords = ['vim', 'nvim', 'ssh', 'tmux', 'termpdf', 'REPL']
     for keyword in keywords:
         if keyword in proc:
             pass_key(args[2], w)
