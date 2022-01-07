@@ -66,7 +66,7 @@ installed.
 
 Use your favorite plugin manager (`packer.nvim` in the example) and add the 
 this repository to your plugin list
-```vim
+```lua
 packer.use {
   "marromlam/sailor.vim",
   run = "./install.sh"
