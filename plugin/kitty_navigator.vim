@@ -68,7 +68,7 @@ let s:kitty_mappings = {
 \ }
 
 if empty($TMUX)
-  echo "this is kitty"
+  " echo "this is kitty"
   " then we just map to Kitty stuff  {{{
 
   " define the commands, in this case they are from kitty
@@ -109,7 +109,7 @@ if empty($TMUX)
   endfunction
   " }}}
 else
-  echo "this is within tmux"
+  " echo "this is within tmux"
   " then we just map to tmux stuff  {{{
 
   " define the commands, in this case they are from tmux
