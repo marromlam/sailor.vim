@@ -9,7 +9,7 @@ fi
 
 # kitty installation
 # we just need to create some links to be able to navigate
-KITTY_PATH="$HOME/.config/kitty"
+KITTY_PATH="$HOME/.config/kitty/kittens"
 ln -sf {$THIS_PATH,$KITTY_PATH}/neighboring_window.py
 ln -sf {$THIS_PATH,$KITTY_PATH}/pass_keys.py
 

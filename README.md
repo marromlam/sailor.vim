@@ -24,13 +24,13 @@ Let's try to illustrate it:
 |   |   + ------------ +   |   |                          |
 |   |                      |   |                          |
 |   + -------------------- +   + ------------------------ +
-|   |                      |   |                          |                   
+|   |                      |   |                          |
 |   | tmux pane            |   |   + ----- nvim ----- +   |
 |   |                      |   |   |                  |   |
 |   |                      |   |   | buffer           |   |
 |   |                      |   |   |                  |   |
 |   + -------------------- +   |   + ---------------- +   |
-|                              |                          |  
+|                              |                          |
 + ---------------------------- + ------------------------ +
 ```
 
@@ -41,12 +41,13 @@ Usage
 -----
 
 This plugin provides the following mappings which allow you to move between
-Vim splits, tmux panes, and kitty window seamlessly.
+vim splits, tmux panes, and kitty windows seamlessly.
 
 - `<ctrl-h>` => Left
 - `<ctrl-j>` => Down
 - `<ctrl-k>` => Up
 - `<ctrl-l>` => Right
+
 
 Installation
 ------------
@@ -58,14 +59,14 @@ installed.
 
 ### Requirements
 
-- This requires kitty v0.13.1 or higher.
-- Requires newer version of tmux with 'pane_at_*' format feature. (Not sure which version, but tested tmux 2.1 and didn't work)
-- Works even between splits in a tmux session inside a kitty window.
+- This requires kitty version higher than 0.13.1 and lower than 0.24.x.
+- Requires newer version of tmux version higher than 2.7.
+
 
 ### Editor: vim/nvim.
 
-Use your favorite plugin manager (`packer.nvim` in the example) and add the 
-this repository to your plugin list
+Use your favorite plugin manager (`packer.nvim` in the example) and add this
+repository to your plugin list
 ```lua
 packer.use {
   "marromlam/sailor.vim",
@@ -75,22 +76,20 @@ packer.use {
 
 ### kitty.
 
-To configure kitty, do the following steps:
+When installing the vim/nvim plugin, the installer is going to create 
+ `pass_keys.py` and `neighboring_window.py` kittens into
+ `~/.config/kitty/kittens`. We still need to configure two more things:
 
-1. Copy both `pass_keys.py` and `neighboring_window.py` kittens to the `~/.config/kitty/`.
-
-2. Add the following to your `~/.config/kitty/kitty.conf` file:
+1. Add the following to your `~/.config/kitty/kitty.conf` file:
 
 ```sh
-map ctrl+j kitten pass_keys.py bottom ctrl+j
-map ctrl+k kitten pass_keys.py top    ctrl+k
-map ctrl+h kitten pass_keys.py left   ctrl+h
-map ctrl+l kitten pass_keys.py right  ctrl+l
+map ctrl+j kitten kittens/pass_keys.py bottom ctrl+j
+map ctrl+k kitten kittens/pass_keys.py top    ctrl+k
+map ctrl+h kitten kittens/pass_keys.py left   ctrl+h
+map ctrl+l kitten kittens/pass_keys.py right  ctrl+l
 ```
 
-`kitty-vim-tmux-navigator` changes `vim-kitty-navigator` vim detection method from using title name to running foreground process name. So it removes the capability to change title regex.
-
-3. Enable kitty `allow_remote_control` and `listen_on` option:
+2. Enable kitty `allow_remote_control` and `listen_on` option:
 
 Set it on the `~/.config/kitty/kitty.conf` file:
 
@@ -107,7 +106,10 @@ Start kitty with the `listen_on` option so that vim can send commands to it.
 kitty -o allow_remote_control=yes --listen-on unix:/tmp/mykitty
 ```
 
-The listening address can be customized in your vimrc by setting `g:kitty_navigator_listening_on_address`. It defaults to `unix:/tmp/mykitty`.
+The listening address can be customized in your `.vimrc` or `init.lua` by setting
+```lua
+vim.g.kitty_navigator_listening_on_address = 'unix:/tmp/mykitty'
+```.
 
 ### tmux.
 
@@ -126,10 +128,23 @@ the `.tmux` file to your `tmux.conf` file.
 SSH Compatibility
 -----------------
 
-With the settings above, navigation should work well locally. But if you need kitty-tmux navigation also work through ssh, follow steps below:
+With the settings above, navigation should work well locally. But if you need
+kitty-tmux navigation also work through ssh, follow steps below:
 
-1. Install kitty on your remote machine. [How To](https://sw.kovidgoyal.net/kitty/binary.html?highlight=install).
-With kitty installed on your remote system and remote control enabled, you should be able to use remote control from ssh. But because of reasons explained [here](https://github.com/kovidgoyal/kitty/issues/2338), it won't work from inside tmux. So we're going to need some workarounds.
+1. Install kitty on your remote machine, here I show how to do it in 
+linux using linuxbrew:
+[How To](https://sw.kovidgoyal.net/kitty/binary.html?highlight=install).
+```bash
+wget https://github.com/kovidgoyal/kitty/releases/download/v0.20.3/kitty-0.20.3-x86_64.txz -O kitty.txz
+mkdir $HOMEBREW_PREFIX/Cellar/kitty
+tar xf kitty.txz -C $HOMEBREW_PREFIX/Cellar/kitty
+ln -sf $HOMEBREW_PREFIX/Cellar/kitty/bin/kitty $HOMEBREW_PREFIX/bin
+rm kitty.txz
+```
+With kitty installed on your remote system and remote control enabled, your
+should be able to use remote control from ssh. But because of reasons explained
+[here](https://github.com/kovidgoyal/kitty/issues/2338), it won't work from
+inside tmux. So we're going to need some workarounds.
 
 2. Set remote port forwarding when using SSH.
 
