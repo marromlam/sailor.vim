@@ -83,10 +83,23 @@ When installing the vim/nvim plugin, the installer is going to create
 1. Add the following to your `~/.config/kitty/kitty.conf` file:
 
 ```sh
-map ctrl+j kitten kittens/pass_keys.py bottom ctrl+j
-map ctrl+k kitten kittens/pass_keys.py top    ctrl+k
-map ctrl+h kitten kittens/pass_keys.py left   ctrl+h
-map ctrl+l kitten kittens/pass_keys.py right  ctrl+l
+map ctrl+j kitten kittens/pass_keys.py kittens/neighboring_window bottom ctrl+j
+map ctrl+k kitten kittens/pass_keys.py kittens/neighboring_window top    ctrl+k
+map ctrl+h kitten kittens/pass_keys.py kittens/neighboring_window left   ctrl+h
+map ctrl+l kitten kittens/pass_keys.py kittens/neighboring_window right  ctrl+l
+```
+
+By default `vim-kitty-navigator` uses the name of the current foreground
+process to detect when it is in a (neo)vim session or not. If that doesn't
+work, (or if you want to support applications other than vim) you can supply a
+fourth optional argument to the `pass_keys.py` call in your `kitty.conf` file
+to match the process name.
+
+```sh
+map ctrl+j kitten kittens/pass_keys.py kittens/neighboring_window bottom ctrl+j "^.* - nvim$"
+map ctrl+k kitten kittens/pass_keys.py kittens/neighboring_window top    ctrl+k "^.* - nvim$"
+map ctrl+h kitten kittens/pass_keys.py kittens/neighboring_window left   ctrl+h "^.* - nvim$"
+map ctrl+l kitten kittens/pass_keys.py kittens/neighboring_window right  ctrl+l "^.* - nvim$"
 ```
 
 2. Enable kitty `allow_remote_control` and `listen_on` option:
