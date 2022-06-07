@@ -4,7 +4,7 @@
 # Kitty Tmux navigator
 # SSH aware kitty change window
 tmux if-shell '[ $SSH_TTY ]' 'to="--to=tcp:localhost:$KITTY_PORT "' 'to=""'
-move='kitty @ ${to}kitten neighboring_window.py'
+move='kitty @ ${to}kitten kittens/neighboring_window.py'
 
 
 # (n)vim window checker
