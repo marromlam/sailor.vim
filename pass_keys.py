@@ -42,7 +42,7 @@ def handle_result(args, result, target_window_id, boss):
         encoded = encode_key_mapping(window, key_mapping)
         window.write_to_child(encoded)
     elif matches_program(window, 'tmux'):
-        # return
-        0 = 1
+        # pass_key(args[2], window)
+        extended = window.screen.extended_keyboard
     else:
         boss.active_tab.neighboring_window(direction)
