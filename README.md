@@ -173,22 +173,13 @@ You can put it as an alias on your shell rc file so you don't type it all the ti
 alias ssh='ssh -R 50000:${KITTY_LISTEN_ON#*:}'
 ```
 
-3. Add the following snippet to your remote machine's `.bashrc` or something similar on other shell:
+3. Add the following snippet to your remote machine's `.zshrc` or something similar on other shell:
 
 ```sh
-# Source kitty binary
-export PATH=$PATH:~/.local/kitty.app/bin/
-
 # Set KITTY_PORT env variable
 if [[ $SSH_TTY ]] && ! [ -n "$TMUX" ]; then
   export KITTY_PORT=`kitty @ ls 2>/dev/null | grep "[0-9]:/tmp/mykitty" | head -n 1 | cut -d : -f 1 | cut -d \" -f 2`
 fi
-
-# Kitty Terminal Navigation
-bind -x '"\C-h": kitty @ kitten neighboring_window.py left'
-bind -x '"\C-j": kitty @ kitten neighboring_window.py top'
-bind -x '"\C-k": kitty @ kitten neighboring_window.py bottom'
-bind -x '"\C-l": kitty @ kitten neighboring_window.py right'
 ```
 
   **Explanation**:
