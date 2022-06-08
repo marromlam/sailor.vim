@@ -6,6 +6,9 @@ from kitty.key_encoding import KeyEvent, parse_shortcut
 
 def matches_program(window, vim_id):
     fp = window.child.foreground_processes
+    if any(re.search("ssh", p['cmdline'][0] if len(p['cmdline']) else '', re.I) for p in fp):
+        ft = window.title
+        return re.search(vim_id, ft if ft else '', re.I)
     return any(re.search(vim_id, p['cmdline'][0] if len(p['cmdline']) else '', re.I) for p in fp)
 
 
@@ -42,7 +45,10 @@ def handle_result(args, result, target_window_id, boss):
         encoded = encode_key_mapping(window, key_mapping)
         window.write_to_child(encoded)
     elif matches_program(window, 'tmux'):
-        # pass_key(args[2], window)
-        extended = window.screen.extended_keyboard
+        encoded = encode_key_mapping(window, key_mapping)
+        window.write_to_child(encoded)
+        # 0 = 0
+        # this_function_does_not_exist(direction, window)
+        # extended = window.screen.extended_keyboard
     else:
         boss.active_tab.neighboring_window(direction)
