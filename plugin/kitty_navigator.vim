@@ -100,7 +100,7 @@ if empty($TMUX)
     let at_tab_page_edge = (nr == winnr())
   
     if kitty_last_pane || at_tab_page_edge
-      let args = 'kitten neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
+      let args = 'kitten kittens/neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
       silent call s:KittyCommand(args)
       let s:kitty_is_last_pane = 1
     else
@@ -178,7 +178,7 @@ else
           "       we should check it works always
           " echo "ha! so this is the last pane"
           let tmux_last_pane = 1
-          let args = 'kitten neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
+          let args = 'kitten kittens/neighboring_window.py' . ' ' . s:kitty_mappings[a:direction]
           silent call s:KittyCommand(args)
           let s:kitty_is_last_pane = 1
         else
