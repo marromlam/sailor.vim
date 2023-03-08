@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-THIS_PATH=`pwd`
+THIS_PATH=`readlink -f $0`
+THIS_PATH=`dirname $THIS_PATH`
 
 if test -f "$THIS_PATH/installation_complete"; then
   # then the installation is complete
@@ -23,7 +24,7 @@ fi
 
 # tmux installation
 # maybe we should create a warning to add the tmux plugin.
-# it is a bit too hard to create the symbolic link. 
+# it is a bit too hard to create the symbolic link.
 # TODO: create the warning.
 
 
