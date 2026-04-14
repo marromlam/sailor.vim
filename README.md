@@ -63,16 +63,55 @@ installed.
 - Requires newer version of tmux version higher than 2.7.
 
 
-### Editor: vim/nvim.
+### Editor: nvim.
 
-Use your favorite plugin manager (`packer.nvim` in the example) and add this
-repository to your plugin list
+Use your favorite plugin manager and add this repository to your plugin list.
+
+**lazy.nvim:**
 ```lua
-packer.use {
+{
   "marromlam/sailor.vim",
-  run = "./install.sh"
+  build = "./install.sh",
+  config = function()
+    require('sailor').setup({
+      -- no_mappings         = false,  -- skip creating <C-h/j/k/l> mappings
+      -- save_on_switch      = 1,      -- 0=no save, 1=save buffer, 2=save all
+      -- disable_when_zoomed = false,  -- disable nav when tmux pane is zoomed
+      -- preserve_zoom       = false,  -- pass -Z to tmux select-pane
+    })
+  end,
 }
 ```
+
+**vim.pack (Neovim 0.12+):**
+
+Clone the repo and run the installer:
+```sh
+git clone https://github.com/marromlam/sailor.vim \
+  ~/.local/share/nvim/site/pack/plugins/start/sailor.vim
+~/.local/share/nvim/site/pack/plugins/start/sailor.vim/install.sh
+```
+
+The plugin works out of the box with default settings. To customise, set
+`vim.g.sailor_no_default_setup = 1` before the plugin loads and call `setup()`
+yourself in your `init.lua`:
+```lua
+vim.g.sailor_no_default_setup = 1   -- must be set before plugin loads
+require('sailor').setup({
+  -- no_mappings         = false,  -- skip creating <C-h/j/k/l> mappings
+  -- save_on_switch      = 1,      -- 0=no save, 1=save buffer, 2=save all
+  -- disable_when_zoomed = false,  -- disable nav when tmux pane is zoomed
+  -- preserve_zoom       = false,  -- pass -Z to tmux select-pane
+})
+```
+
+> **Re-running the installer:** `install.sh` creates a sentinel file
+> (`installation_complete`) after its first run and skips subsequent runs.
+> If you need to re-run it (e.g. after moving files), delete the sentinel first:
+> ```sh
+> rm ~/.local/share/nvim/site/pack/plugins/start/sailor.vim/installation_complete
+> ~/.local/share/nvim/site/pack/plugins/start/sailor.vim/install.sh
+> ```
 
 ### kitty.
 
@@ -118,11 +157,6 @@ Start kitty with the `listen_on` option so that vim can send commands to it.
 ```
 kitty -o allow_remote_control=yes --listen-on unix:/tmp/mykitty
 ```
-
-The listening address can be customized in your `.vimrc` or `init.lua` by setting
-```lua
-vim.g.kitty_navigator_listening_on_address = 'unix:/tmp/mykitty'
-```.
 
 ### tmux.
 

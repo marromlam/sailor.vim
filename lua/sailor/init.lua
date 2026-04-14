@@ -15,6 +15,9 @@ local kitty_mappings = { h = 'left', j = 'bottom', k = 'top', l = 'right' }
 -- vim direction → tmux select-pane flag
 local tmux_dir = { h = 'L', j = 'D', k = 'U', l = 'R' }
 
+-- valid directions for M.navigate input validation
+local valid_directions = { h = true, j = true, k = true, l = true }
+
 local config = {} -- populated by setup()
 
 -- ---------------------------------------------------------------------------
@@ -26,19 +29,26 @@ local function vim_navigate(direction)
   return ok
 end
 
-local function native_term_command(args)
-  local cmd
+-- direction: one of 'left', 'bottom', 'top', 'right'
+local function native_term_command(direction)
   if os.getenv('WEZTERM_PANE') then
-    local wez = 'env -u WEZTERM_UNIX_SOCKET wezterm cli '
-    local pane_id_cmd = wez .. "list-clients | awk '{print $(NF)}' | tail -1"
-    cmd = wez .. 'activate-pane-direction --pane-id $(' .. pane_id_cmd .. ') ' .. args
+    local wez = { 'env', '-u', 'WEZTERM_UNIX_SOCKET', 'wezterm', 'cli' }
+    local clients = vim.fn.system(vim.list_extend(vim.deepcopy(wez), { 'list-clients' }))
+    local last_line
+    for line in clients:gmatch('[^\r\n]+') do
+      if line:match('%S') then last_line = line end
+    end
+    local pane_id = last_line and last_line:match('(%S+)%s*$')
+    if not pane_id then return end
+    vim.fn.system(vim.list_extend(vim.deepcopy(wez),
+      { 'activate-pane-direction', '--pane-id', pane_id, direction }))
   elseif os.getenv('SSH_TTY') then
     local port = os.getenv('KITTY_PORT') or ''
-    cmd = 'kitty @ --to=tcp:localhost:' .. port .. ' ' .. args
+    vim.fn.system({ 'kitty', '@', '--to=tcp:localhost:' .. port,
+      'kitten', 'kittens/neighboring_window.py', direction })
   else
-    cmd = 'kitty @ ' .. args
+    vim.fn.system({ 'kitty', '@', 'kitten', 'kittens/neighboring_window.py', direction })
   end
-  return vim.fn.system(cmd)
 end
 
 local function tmux_or_tmate()
@@ -54,13 +64,14 @@ local function tmux_socket()
   return tmux_env:match('^([^,]+)')
 end
 
+-- args: table of strings, e.g. { 'display-message', '-p', '#{window_zoomed_flag}' }
 local function tmux_command(args)
-  local cmd = tmux_or_tmate() .. ' -S ' .. tmux_socket() .. ' ' .. args
+  local cmd = vim.list_extend({ tmux_or_tmate(), '-S', tmux_socket() }, args)
   return vim.fn.system(cmd)
 end
 
 local function tmux_pane_is_zoomed()
-  local result = tmux_command("display-message -p '#{window_zoomed_flag}'")
+  local result = tmux_command({ 'display-message', '-p', '#{window_zoomed_flag}' })
   return vim.trim(result) == '1'
 end
 
@@ -77,23 +88,11 @@ end
 
 local function kitty_aware_navigate(direction)
   local nr = vim.fn.winnr()
-  local kitty_last_pane = false
-
-  if not kitty_last_pane then
-    local ok = vim_navigate(direction)
-    if not ok then
-      kitty_last_pane = true
-    end
-  end
-
+  local kitty_last_pane = not vim_navigate(direction)
   local at_tab_page_edge = (vim.fn.winnr() == nr)
 
   if kitty_last_pane or at_tab_page_edge then
-    if os.getenv('WEZTERM_PANE') then
-      native_term_command(kitty_mappings[direction])
-    else
-      native_term_command('kitten kittens/neighboring_window.py ' .. kitty_mappings[direction])
-    end
+    native_term_command(kitty_mappings[direction])
     state.kitty_is_last_pane = true
   else
     state.kitty_is_last_pane = false
@@ -103,24 +102,22 @@ end
 local function tmux_aware_navigate(direction)
   local nr = vim.fn.winnr()
   local tmux_last_pane = false
+  local ok = vim_navigate(direction)
 
-  if not tmux_last_pane then
-    local ok = vim_navigate(direction)
-    if ok then
-      -- vim navigation succeeded; check if we actually moved
-      local at_tab_page_edge = (vim.fn.winnr() == nr)
-      if at_tab_page_edge then
-        -- at the edge of vim within a tmux pane; forward to kitty
-        tmux_last_pane = true
-        native_term_command('kitten kittens/neighboring_window.py ' .. kitty_mappings[direction])
-        state.kitty_is_last_pane = true
-      else
-        state.kitty_is_last_pane = false
-      end
-    else
-      -- vim navigation failed; we are at the vim boundary
+  if ok then
+    -- vim navigation succeeded; check if we actually moved
+    local at_tab_page_edge = (vim.fn.winnr() == nr)
+    if at_tab_page_edge then
+      -- at the edge of vim within a tmux pane; forward to terminal
       tmux_last_pane = true
+      native_term_command(kitty_mappings[direction])
+      state.kitty_is_last_pane = true
+    else
+      state.kitty_is_last_pane = false
     end
+  else
+    -- vim navigation failed; we are at the vim boundary
+    tmux_last_pane = true
   end
 
   -- recompute after the vim_navigate block (mirrors original VimScript)
@@ -133,11 +130,9 @@ local function tmux_aware_navigate(direction)
       pcall(vim.cmd, 'wall')
     end
 
-    local args = 'select-pane -t '
-      .. vim.fn.shellescape(os.getenv('TMUX_PANE') or '')
-      .. ' -' .. tmux_dir[direction]
+    local args = { 'select-pane', '-t', os.getenv('TMUX_PANE') or '', '-' .. tmux_dir[direction] }
     if config.preserve_zoom then
-      args = args .. ' -Z'
+      table.insert(args, '-Z')
     end
 
     tmux_command(args)
@@ -148,6 +143,10 @@ local function tmux_aware_navigate(direction)
 end
 
 function M.navigate(direction)
+  if not valid_directions[direction] then
+    vim.notify("sailor: invalid direction '" .. tostring(direction) .. "' (expected h/j/k/l)", vim.log.levels.ERROR)
+    return
+  end
   local tmux_env = os.getenv('TMUX')
   if tmux_env and tmux_env ~= '' then
     tmux_aware_navigate(direction)

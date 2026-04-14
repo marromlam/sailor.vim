@@ -4,13 +4,14 @@
     "version": "LuaJIT"
   },
   "workspace": {
-    "library": [],
+    "library": [
+      "$VIMRUNTIME/lua",
+      "${3rd}/luv/library"
+    ],
     "checkThirdParty": false
   },
-  "globals": ["vim"],
   "diagnostics": {
-    "globals": [
-      "vim"
-    ]
+    "globals": ["vim"],
+    "disable": ["unused-local"]
   }
 }
