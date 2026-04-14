@@ -11,15 +11,15 @@ fi
 # kitty installation
 # we just need to create some links to be able to navigate
 KITTY_PATH="$HOME/.config/kitty/kittens"
-ln -sf {$THIS_PATH,$KITTY_PATH}/neighboring_window.py
-ln -sf {$THIS_PATH,$KITTY_PATH}/pass_keys.py
+ln -sf "$THIS_PATH/extra/neighboring_window.py" "$KITTY_PATH/neighboring_window.py"
+ln -sf "$THIS_PATH/extra/pass_keys.py" "$KITTY_PATH/pass_keys.py"
 
 # ssh installation
 # we only need this if we are installing in a ssh machine
 # TODO: each shell needs its own config file.
 #       we need to do some branchin here.
 if [ $SSH_TTY ]; then
-  echo "source $THIS_PATH/sailor.zsh" >> ~/.zshrc
+  echo "source $THIS_PATH/extra/sailor.zsh" >> ~/.zshrc
 fi
 
 # tmux installation
